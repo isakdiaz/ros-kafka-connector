@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="bootstrap_server" default="localhost:9092"/>
+    <arg name="kafka_topic" default="rosout"/>
+    <arg name="ros_topic" default="rosout"/>
+
+
+    <node pkg="ros_kafka_connector" type="kafka_publish.py" name="kafka_publish">
+        <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
+        <param name="~kafka_topic" value="$(arg kafka_topic)"/>
+        <param name="~ros_topic" value="$(arg ros_topic)"/>
+    </node>
+
+
+</launch>
