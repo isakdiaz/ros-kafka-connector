@@ -1,4 +1,4 @@
-# ros_kafka_connector ROS Package
+# ROS Package: ros_kafka_connector 
 
 This is a ROS package for subscribing or publishing to topics using Kafka. 
 
