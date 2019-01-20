@@ -11,7 +11,7 @@ This is a ROS package for subscribing or publishing to topics using Kafka.
 
 
 
-Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file. (default: "std_msgs/String")
+Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file and then changing the parameter in the launch file.
 
 
 ## Publish to ROS topic
