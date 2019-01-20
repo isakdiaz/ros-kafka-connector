@@ -21,7 +21,7 @@ pip install kafka-python
 #### python script
 from kafka import KafkaProducer                                  
 producer = KafkaProducer(bootstrap_servers="localhost:9092", value_serializer=lambda x: json.dumps(x).encode('ascii')) 
-producer.send('test',{'data':'Hello World!'})          # test is topic name
+producer.send('test',{'data':'Hello World!'})          # test is kafka topic name
 
 
 ## Publish to Kafka topic
@@ -33,7 +33,7 @@ To test this node you can simply type...
 roscore
 rostopic pub -r 3 /test std_msgs/String "data: 'Hello World!'"
 
-This will output the hello world at 3 hz to the "/test" topic. To confirm this works you can open up another terminal and type in 
-"rostopic echo /test" which should show you the same message is being published to ROS.
+This will output the hello world at 3 hz to the "/test" ROS topic. To confirm this works you can open up another terminal and type in 
+"rostopic echo /test" which should show you the same message is being published to ROS. This message should also be published to the Kafka topic.
 
 
