@@ -16,7 +16,7 @@ Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are support
 
 ## Publish to ROS topic
 ```
-roslaunch ros_kafka_connector ros_publish.launch
+$ roslaunch ros_kafka_connector ros_publish.launch
 ```
 After updating the launch file with the correct settings for your topic, you can test it by pubishing a JSON to your kafka topic using a kafka publisher. You could also send the message to the kafka server through python with the following script.
 
@@ -35,7 +35,7 @@ producer.send(kafka_topic, {'data': msg})          # 'data' is part of the strin
 
 ## Publish to Kafka topic
 ```
-roslaunch ros_kafka_connector kafka_publish.launch
+$ roslaunch ros_kafka_connector kafka_publish.launch
 ```
 
 To test this node you can simply type...
