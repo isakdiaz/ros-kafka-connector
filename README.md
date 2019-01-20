@@ -18,7 +18,9 @@ Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are support
 ```
 $ roslaunch ros_kafka_connector ros_publish.launch
 ```
-After updating the launch file with the correct settings for your topic, you can test it by pubishing a JSON to your kafka topic using a kafka publisher. You could also send the message to the kafka server through python with the following script.
+After updating the launch file with the correct settings for your topic, you can test it by pubishing a json to your kafka topic using a kafka publisher. The String message json is simple: {'data': 'Hello world!'}
+
+You could also send the message to the kafka server through python with the following script.
 
 #### Install kafka library
 ```
