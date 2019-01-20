@@ -7,7 +7,7 @@ PARAMETERS:
 bootstrap_server: Internal IP or External IP address of VM (default: "localhost:9092")  
 kafka_topic: name of topic on server (default: "test")  
 ros_topic: name of ros topic (default: "test")  
-msg_type: Specify the message type. Currently std_msgs/String, geometry_msgs/Image and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file. (default: "std_msgs/String")
+msg_type: Specify the message type. Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file. (default: "std_msgs/String")
 
 
 ## Publish to ROS topic
