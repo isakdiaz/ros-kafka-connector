@@ -2,7 +2,8 @@
 
 This is a ROS package for subscribing or publishing to topics using Kafka. 
 
-Settings:
+
+PARAMETERS:
 bootstrap_server: Internal IP or External IP address of VM (default: "localhost:9092")
 kafka_topic: name of topic on server (default: "test")
 ros_topic: name of ros topic (default: "test")
@@ -23,6 +24,16 @@ producer = KafkaProducer(bootstrap_servers="localhost:9092", value_serializer=la
 producer.send('test',{'data':'Hello World!'})          # test is topic name
 
 
-
 ## Publish to Kafka topic
 roslaunch ros_kafka_connector kafka_publish.launch
+
+To test this node you can simply type...
+
+#### Terminal
+roscore
+rostopic pub -r 3 /test std_msgs/String "data: 'Hello World!'"
+
+This will output the hello world at 3 hz to the "/test" topic. To confirm this works you can open up another terminal and type in 
+"rostopic echo /test" which should show you the same message is being published to ROS.
+
+
