@@ -2,12 +2,16 @@
 
 This is a ROS package for subscribing or publishing to topics using Kafka. 
 
+| Parameter       |  Info           | Default  |
+| ------------- |:-------------:| -----:|
+| bootstrap_server      | IP of kafka server | "localhost:9092" |
+| kafka_topic      | topic name found in Kafka      |  "test" |
+| ros_topic | topic name found in ROS      |    "test" |
+| msg_type | full ROS message name      |    "std_msgs/String" |
 
-PARAMETERS:  
-bootstrap_server: Internal IP or External IP address of VM (default: "localhost:9092")  
-kafka_topic: name of topic on server (default: "test")  
-ros_topic: name of ros topic (default: "test")  
-msg_type: Specify the message type. Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file. (default: "std_msgs/String")
+
+
+Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file. (default: "std_msgs/String")
 
 
 ## Publish to ROS topic
@@ -19,13 +23,16 @@ After updating the launch file with the correct settings for your topic, you can
 pip install kafka-python
 
 #### python script
+```
 from kafka import KafkaProducer                                  
 producer = KafkaProducer(bootstrap_servers="localhost:9092", value_serializer=lambda x: json.dumps(x).encode('ascii')) 
 producer.send('test',{'data':'Hello World!'})          # test is kafka topic name
-
+```
 
 ## Publish to Kafka topic
+```
 roslaunch ros_kafka_connector kafka_publish.launch
+```
 
 To test this node you can simply type...
 
