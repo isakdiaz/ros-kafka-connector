@@ -14,6 +14,6 @@ def import_msg_type(msg_type):
         subscriber_msg = Image
     else:
         raise ValueError("MSG NOT SUPPORTED: Only String/Twist/Image are currently supported. \
-                          Please add imports to kafka_publish.py for specific msg type.")
+                          Please add imports to utils.py for specific msg type.")
     
     return subscriber_msg
