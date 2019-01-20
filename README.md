@@ -3,7 +3,7 @@
 This is a ROS package for subscribing or publishing to topics using Kafka. 
 
 
-PARAMETERS:
+PARAMETERS:  
 bootstrap_server: Internal IP or External IP address of VM (default: "localhost:9092")  
 kafka_topic: name of topic on server (default: "test")  
 ros_topic: name of ros topic (default: "test")  
