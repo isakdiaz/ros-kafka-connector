@@ -3,14 +3,16 @@
 <launch>
 
     <arg name="bootstrap_server" default="localhost:9092"/>
-    <arg name="kafka_topic" default="rosout"/>
-    <arg name="ros_topic" default="rosout"/>
+    <arg name="kafka_topic" default="new_topic"/>
+    <arg name="ros_topic" default="new_topic"/>
+    <arg name="msg_type" default="geometry_msgs/Twist"/>
 
 
     <node pkg="ros_kafka_connector" type="ros_publish.py" name="ros_publish">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
         <param name="~kafka_topic" value="$(arg kafka_topic)"/>
         <param name="~ros_topic" value="$(arg ros_topic)"/>
+        <param name="~msg_type" value="$(arg msg_type)"/>
     </node>
 
 
