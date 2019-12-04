@@ -23,16 +23,18 @@ class kafka_publish():
         schema_server = rospy.get_param("~schema_server", "http://localhost:8081")
 
         self.ros_topic = rospy.get_param("~ros_topic", "test")
-        self.kafka_topic = rospy.get_param("~kafka_topic", "bar")
         self.msg_type = rospy.get_param("~msg_type", "std_msgs/String")
-
-        # Create kafka producer
-        # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
-        self.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
+        self.kafka_topic = rospy.get_param("~kafka_topic", "bar")
+        self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
 
         # Create schema registry connection and serializer
         self.client = CachedSchemaRegistryClient(url=schema_server)
         self.serializer = MessageSerializer(self.client)
+        _, self.avro_schema, _ = self.client.get_latest_schema(self.avro_subject)
+
+        # Create kafka producer
+        # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
+        self.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
 
         # ROS does not allow a change in msg type once a topic is created. Therefore the msg
         # type must be imported and specified ahead of time.
@@ -49,7 +51,9 @@ class kafka_publish():
         # Convert from ROS Msg to Dictionary
         msg_as_dict = message_converter.convert_ros_message_to_dictionary(msg)
         # Convert from Dictionary to Kafka message
-        msg_as_serial = self.serializer.encode_record_for_topic(self.kafka_topic, msg_as_dict)
+        # this way is slow, as it has to retrieve last schema
+        # msg_as_serial = self.serializer.encode_record_for_topic(self.kafka_topic, msg_as_dict)
+        msg_as_serial = self.serializer.encode_record_with_schema(self.kafka_topic, self.avro_schema, msg_as_dict)
         self.producer.send(self.kafka_topic, value=msg_as_serial)
 
     def run(self):

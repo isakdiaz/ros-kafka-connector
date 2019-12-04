@@ -3,16 +3,19 @@
 <launch>
 
     <arg name="bootstrap_server" default="localhost:9092"/>
+    <arg name="schema_server" default="http://localhost:8081"/>
     <arg name="kafka_topic" default="new_topic"/>
     <arg name="ros_topic" default="new_topic"/>
     <arg name="msg_type" default="std_msgs/String"/>
-
+    <arg name="avro_subject" default="" />
 
     <node pkg="ros_kafka_connector" type="kafka_publish.py" name="kafka_publish">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
+        <param name="~schema_server" value="$(arg schema_server)"/>
         <param name="~kafka_topic" value="$(arg kafka_topic)"/>
         <param name="~ros_topic" value="$(arg ros_topic)"/>
         <param name="~msg_type" value="$(arg msg_type)"/>
+        <param name="~avro_subject" value="$(arg avro_subject)"/>
     </node>
 
 
