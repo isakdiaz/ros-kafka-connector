@@ -12,6 +12,23 @@ import avro.schema
 #raw_schema = open(sys.argv[1])
 #json_schema = json.load(raw_schema)
 
+def convert_avro_name_to_ros_name(name):
+    if name == 'boolean':
+        return 'bool'
+    if name == 'int':
+        return 'int32'
+    if name == 'long':
+        return 'int64'
+    if name == 'float':
+        return 'float32'
+    if name == 'double':
+        return 'float64'
+    if name == 'bytes':
+        return 'byte[]'
+    if name == 'string':
+        return 'string'
+    return ''
+
 def process_union_schema(schema):
     union_type = []
     for sc in schema.schemas:
@@ -19,23 +36,21 @@ def process_union_schema(schema):
             union_type.append(sc.fullname)
     if len(union_type) >= 2 or len(union_type) == 0:
         print 'Error!'
-    return union_type[0]
+    return convert_avro_name_to_ros_name(union_type[0])
 
 def process_record_schema(schema, outfile=None):
-    fields_to_parse = []
-#    print 'name:', schema.name
-#    print '======'
+    schemas_to_parse = []
     for field_key in schema.fields_dict:
         field = schema.fields_dict[field_key]
         if type(field.type) == avro.schema.PrimitiveSchema:
-            line = field.type.fullname + ' ' + field.name
+            line = convert_avro_name_to_ros_name(field.type.fullname) + ' ' + field.name
             print line
             outfile.write(line + '\n')
         elif type(field.type) == avro.schema.ArraySchema:
             line = field.type.items.name + '[] ' + field.name
             print line
             outfile.write(line + '\n')
-            fields_to_parse.append(field.type.items)
+            schemas_to_parse.append(field.type.items)
         elif type(field.type) == avro.schema.UnionSchema:
             line = process_union_schema(field.type) + ' ' + field.name
             print line
@@ -44,8 +59,8 @@ def process_record_schema(schema, outfile=None):
             line = field.type.name + ' ' + field.name
             print line
             outfile.write(line + '\n')
-            fields_to_parse.append(field.type)
-    return fields_to_parse
+            schemas_to_parse.append(field.type)
+    return schemas_to_parse
 
 schemas = [avro.schema.parse(open(sys.argv[1]).read())]
 while len(schemas) != 0:
