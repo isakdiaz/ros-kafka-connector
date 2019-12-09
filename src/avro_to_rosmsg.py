@@ -21,21 +21,29 @@ def process_union_schema(schema):
         print 'Error!'
     return union_type[0]
 
-def process_record_schema(schema):
+def process_record_schema(schema, outfile=None):
     fields_to_parse = []
 #    print 'name:', schema.name
 #    print '======'
     for field_key in schema.fields_dict:
         field = schema.fields_dict[field_key]
         if type(field.type) == avro.schema.PrimitiveSchema:
-            print field.type.fullname, field.name
+            line = field.type.fullname + ' ' + field.name
+            print line
+            outfile.write(line + '\n')
         elif type(field.type) == avro.schema.ArraySchema:
-            print field.type.items.name + '[]', field.name
+            line = field.type.items.name + '[] ' + field.name
+            print line
+            outfile.write(line + '\n')
             fields_to_parse.append(field.type.items)
         elif type(field.type) == avro.schema.UnionSchema:
-            print process_union_schema(field.type), field.name
+            line = process_union_schema(field.type) + ' ' + field.name
+            print line
+            outfile.write(line + '\n')
         else:
-            print field.type.name, field.name
+            line = field.type.name + ' ' + field.name
+            print line
+            outfile.write(line + '\n')
             fields_to_parse.append(field.type)
     return fields_to_parse
 
@@ -43,31 +51,10 @@ schemas = [avro.schema.parse(open(sys.argv[1]).read())]
 while len(schemas) != 0:
     new_schemas = []
     for schema in schemas:
-        ns = process_record_schema(schema)
+        msg_file = open(schema.name + '.msg', 'wt')
+        ns = process_record_schema(schema, msg_file)
         print ''
         new_schemas.extend(ns)
+        msg_file.close()
     schemas = new_schemas
 
-
-
-#fields_to_parse = []
-#for field_key in schema.fields_dict:
-#    field = schema.fields_dict[field_key]
-#    if type(field.type) == avro.schema.PrimitiveSchema:
-#        print field.type.fullname, field.name
-#    else:
-#        print type(field.type), field.type.name, field.name
-#        fields_to_parse.append(field)
-#print
-#print fields_to_parse[0].name, ":"
-#field_array = None
-#for field_key in fields_to_parse[0].type.fields_dict:
-#    field = fields_to_parse[0].type.fields_dict[field_key]
-#    if type(field.type) == avro.schema.PrimitiveSchema:
-#        print field.type.fullname, field.name
-#    elif type(field.type) == avro.schema.ArraySchema:
-#        field_array = field
-#        print field.type.items.name + '[]', field.name
-#    else:
-#        print field.type.name, field.name
-#
