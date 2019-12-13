@@ -7,7 +7,7 @@
     <arg name="kafka_topic" default="new_topic"/>
     <arg name="ros_topic" default="new_topic"/>
     <arg name="msg_type" default="std_msgs/String"/>
-    <arg name="avro_subject" default="" />
+    <arg name="avro_subject" default="string-value" />
 
     <node pkg="ros_kafka_connector" type="kafka_publish.py" name="kafka_publish">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>

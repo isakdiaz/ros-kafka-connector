@@ -1,18 +1,16 @@
 # ROS Package: ros_kafka_connector 
 
-This is a ROS package for subscribing or publishing to topics using Kafka. 
+This is a ROS package for subscribing or publishing to topics using Kafka, with typed messages using AVRO schemas
 
 | Parameter       |  Info           | Default  |
 | ------------- |:-------------:| -----:|
-| bootstrap_server      | IP of kafka server | "localhost:9092" |
-| kafka_topic      | topic name found in Kafka      |  "test" |
-| ros_topic | topic name found in ROS      |    "test" |
-| msg_type | full ROS message name      |    "std_msgs/String" |
+| bootstrap_server | IP of kafka server | "localhost:9092" |
+| kafka_topic | topic name found in Kafka |  "test" |
+| ros_topic | topic name found in ROS |    "test" |
+| msg_type | full ROS message name |    "std_msgs/String" |
+| avro_subject | full AVRO subject name |    "string-value" |
 
-
-
-Currently std_msgs/String, geometry_msgs/Twist and sensor_msgs/Image are supported. You can add any message type by adding the import to the utils.py file and then changing the parameter in the launch file.
-
+ROS message types are supported as long as they exist.
 
 ## Publish to ROS topic
 ```
@@ -26,7 +24,7 @@ You could also send the message to the kafka server through python with the foll
 ```
 $ pip install kafka-python
 ```
-#### python script
+#### python script (without avro schema)
 ```
 from kafka import KafkaProducer
 kafka_topic = 'test'
@@ -51,5 +49,4 @@ $ rostopic pub -r 3 /test std_msgs/String "data: 'Hello World!'"
 
 This will output the hello world at 3 hz to the "/test" ROS topic. To confirm this works you can open up another terminal and type in 
 "rostopic echo /test" which should show you the same message is being published to ROS. This message should also be published to the Kafka topic.
-
 
