@@ -38,6 +38,12 @@ def process_union_schema(schema):
         print 'Error!'
     return convert_avro_name_to_ros_name(union_type[0])
 
+def process_enum_schema(schema):
+    symbols = ''
+    for s in schema.symbols:
+        symbols += 'string ' + s + '=' + s + '\n'
+    return symbols
+
 def process_record_schema(schema, outfile=None):
     schemas_to_parse = []
     for field_key in schema.fields_dict:
@@ -53,6 +59,11 @@ def process_record_schema(schema, outfile=None):
             schemas_to_parse.append(field.type.items)
         elif type(field.type) == avro.schema.UnionSchema:
             line = process_union_schema(field.type) + ' ' + field.name
+            print line
+            outfile.write(line + '\n')
+        elif type(field.type) == avro.schema.EnumSchema:
+            line = process_enum_schema(field.type)
+            line += 'string ' + field.name + '\n'
             print line
             outfile.write(line + '\n')
         else:
