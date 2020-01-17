@@ -2,7 +2,7 @@
 
 import rospy
 from rospy_message_converter import message_converter
-
+from rospy_message_converter import json_message_converter
 import rosbridge_library.internal.ros_loader as ros_loader
 
 from kafka import KafkaProducer
@@ -47,14 +47,18 @@ class kafka_publish():
 
     def callback(self, msg):
         # Output msg to ROS and send to Kafka server
-        rospy.logwarn("MSG Receved: {}".format(msg)) 
+        rospy.logwarn("MSG Received: {}".format(msg))
         # Convert from ROS Msg to Dictionary
         msg_as_dict = message_converter.convert_ros_message_to_dictionary(msg)
+        # also print as json for debugging purposes
+        msg_as_json = json_message_converter.convert_ros_message_to_json(msg)
+        rospy.logwarn(msg_as_json)
         # Convert from Dictionary to Kafka message
         # this way is slow, as it has to retrieve last schema
         # msg_as_serial = self.serializer.encode_record_for_topic(self.kafka_topic, msg_as_dict)
         msg_as_serial = self.serializer.encode_record_with_schema(self.kafka_topic, self.avro_schema, msg_as_dict)
         self.producer.send(self.kafka_topic, value=msg_as_serial)
+
 
     def run(self):
         rate = rospy.Rate(10)
