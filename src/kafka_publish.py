@@ -56,7 +56,16 @@ class kafka_publish():
         # Convert from Dictionary to Kafka message
         # this way is slow, as it has to retrieve last schema
         # msg_as_serial = self.serializer.encode_record_for_topic(self.kafka_topic, msg_as_dict)
-        msg_as_serial = self.serializer.encode_record_with_schema(self.kafka_topic, self.avro_schema, msg_as_dict)
+        try:
+            msg_as_serial = self.serializer.encode_record_with_schema(self.kafka_topic, self.avro_schema, msg_as_dict)
+	except Exception as e:
+	    if self.kafka_topic is None:
+	        rospy.logwarn("kafka_topic is None")
+	    elif self.avro_schema is None:
+	        rospy.logwarn("Tryed connect with the topic: " + self.kafka_topic + ", but the avro_schema is None. Was the schema registry?")
+	    else:
+		rospy.logwarn("Cannot publish to " + self.kafka_topic + " with schema " + self.avro_schema + ". Probably bad schema name on registry")
+	    return
         self.producer.send(self.kafka_topic, value=msg_as_serial)
 
 
