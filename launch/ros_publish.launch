@@ -7,8 +7,9 @@
     <arg name="kafka_topic" default="new_topic"/>
     <arg name="ros_topic" default="new_topic"/>
     <arg name="msg_type" default="geometry_msgs/Twist"/>
+    <arg name="node_name" default="ros_publish" />
 
-    <node pkg="ros_kafka_connector" type="ros_publish.py" name="ros_publish">
+    <node pkg="ros_kafka_connector" type="ros_publish.py" name="$(arg node_name)">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
         <param name="~schema_server" value="$(arg schema_server)"/>
         <param name="~kafka_topic" value="$(arg kafka_topic)"/>
