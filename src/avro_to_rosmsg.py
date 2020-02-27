@@ -12,6 +12,8 @@ import avro.schema
 #raw_schema = open(sys.argv[1])
 #json_schema = json.load(raw_schema)
 
+PRINT_INFO = False # True
+
 def convert_avro_name_to_ros_name(name):
     if name == 'boolean':
         return 'bool'
@@ -50,34 +52,44 @@ def process_record_schema(schema, outfile=None):
         field = schema.fields_dict[field_key]
         if type(field.type) == avro.schema.PrimitiveSchema:
             line = convert_avro_name_to_ros_name(field.type.fullname) + ' ' + field.name
-            print line
+            if PRINT_INFO: print line
             outfile.write(line + '\n')
         elif type(field.type) == avro.schema.ArraySchema:
             line = field.type.items.name + '[] ' + field.name
-            print line
+            if PRINT_INFO: print line
             outfile.write(line + '\n')
             schemas_to_parse.append(field.type.items)
         elif type(field.type) == avro.schema.UnionSchema:
             line = process_union_schema(field.type) + ' ' + field.name
-            print line
+            if PRINT_INFO: print line
             outfile.write(line + '\n')
         elif type(field.type) == avro.schema.EnumSchema:
             line = process_enum_schema(field.type)
             line += 'string ' + field.name + '\n'
-            print line
+            if PRINT_INFO: print line
             outfile.write(line + '\n')
         else:
-            line = field.type.name + ' ' + field.name
-            print line
+            object_name = field.type.name if field.type.name != 'DataObject' else schema.name + 'DataObject'
+            line = object_name + ' ' + field.name
+            if PRINT_INFO: print line
             outfile.write(line + '\n')
             schemas_to_parse.append(field.type)
     return schemas_to_parse
 
-schemas = [avro.schema.parse(open(sys.argv[1]).read())]
+print 'PROCESSING FILE: ' + sys.argv[1]
+try:
+    schemas = [avro.schema.parse(open(sys.argv[1]).read())]
+except:
+    print 'ERROR'
+    sys.exit(-1)
+
+basename = sys.argv[1][0:-5]
+
 while len(schemas) != 0:
     new_schemas = []
     for schema in schemas:
-        msg_file = open(schema.name + '.msg', 'wt')
+        msg_filename = schema.name if schema.name != 'DataObject' else basename + 'DataObject'
+        msg_file = open(msg_filename + '.msg', 'wt')
         ns = process_record_schema(schema, msg_file)
         print ''
         new_schemas.extend(ns)
