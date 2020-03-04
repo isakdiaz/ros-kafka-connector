@@ -32,6 +32,9 @@ class kafka_publish():
         self.serializer = MessageSerializer(self.client)
         _, self.avro_schema, _ = self.client.get_latest_schema(self.avro_subject)
 
+        if self.avro_schema is None:
+            rospy.logerr("cannot get schema for " + self.avro_subject)
+
         # Create kafka producer
         # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
         self.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
