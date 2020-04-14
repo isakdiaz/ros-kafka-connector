@@ -10,7 +10,7 @@
     <arg name="avro_subject" default="string-value" />
     <arg name="node_name" default="kafka_publish" />
 
-    <node pkg="ros_kafka_connector" type="kafka_publish.py" name="$(arg node_name)">
+    <node pkg="ros_kafka_connector" type="kafka_publish.py" name="$(arg node_name)" output="screen">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
         <param name="~schema_server" value="$(arg schema_server)"/>
         <param name="~kafka_topic" value="$(arg kafka_topic)"/>

@@ -50,13 +50,13 @@ class ros_publish():
     def run(self):
         while not rospy.is_shutdown():
             for msg in self.consumer:
+                rospy.logwarn("Received MSG from: " + self.kafka_topic)
                 # Convert Kafka message to Dictionary
-                msg_as_dict = self.serializer.decode_message(msg.value) 
+                msg_as_dict = self.serializer.decode_message(msg.value)
                 # Convert Dictionary to ROS Msg
                 ros_msg = message_converter.convert_dictionary_to_ros_message(self.msg_type, msg_as_dict)
                 # Publish to ROS topic
                 self.publisher.publish(ros_msg)
-                rospy.logwarn("Received MSG:")
 
     def shutdown(self):
         rospy.loginfo("Shutting down")
