@@ -115,5 +115,11 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+catkin_install_python(PROGRAMS src/ros_publish.py src/kafka_publish.py src/avro_register.py src/avro_to_rosmsg.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-
+## Mark other files for installation (e.g. launch and bag files, etc.)
+install(
+  DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
