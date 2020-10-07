@@ -12,6 +12,10 @@ This is a ROS package for subscribing or publishing to topics using Kafka, with 
 
 ROS message types are supported as long as they exist.
 
+## Requirements
+
+```https://github.com/verisign/python-confluent-schemaregistry```
+
 ## Publish to ROS topic
 ```
 $ roslaunch ros_kafka_connector ros_publish.launch

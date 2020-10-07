@@ -9,13 +9,30 @@
     <arg name="msg_type" default="geometry_msgs/Twist"/>
     <arg name="node_name" default="ros_publish" />
 
+    <arg name="use_ssl" default="False"/>
+    <arg name="ssl_cafile" default="$(find robotnik_gcs)/include/certificate.pem"/>
+    <arg name="ssl_keyfile" default="$(find robotnik_gcs)/include/kafka.client.keystore.jks"/>
+    <arg name="ssl_password" default="password"/>
+    <arg name="ssl_security_protocol" default="SASL_SSL"/>
+    <arg name="ssl_sasl_mechanism" default="PLAIN"/>
+    <arg name="sasl_plain_username" default="robotnik"/>
+    <arg name="sasl_plain_password" default="robotnik"/>
+
     <node pkg="ros_kafka_connector" type="ros_publish.py" name="$(arg node_name)">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
         <param name="~schema_server" value="$(arg schema_server)"/>
         <param name="~kafka_topic" value="$(arg kafka_topic)"/>
         <param name="~ros_topic" value="$(arg ros_topic)"/>
         <param name="~msg_type" value="$(arg msg_type)"/>
-    </node>
 
+        <param name="~use_ssl" value="$(arg use_ssl)"/>
+        <param name="~ssl_cafile" value="$(arg ssl_cafile)"/>
+        <param name="~ssl_keyfile" value="$(arg ssl_keyfile)"/>
+        <param name="~ssl_password" value="$(arg ssl_password)"/>
+        <param name="~ssl_security_protocol" value="$(arg ssl_security_protocol)"/>
+        <param name="~ssl_sasl_mechanism" value="$(arg ssl_sasl_mechanism)"/>
+        <param name="~sasl_plain_username" value="$(arg sasl_plain_username)"/>
+        <param name="~sasl_plain_password" value="$(arg sasl_plain_password)"/>
+    </node>
 
 </launch>
