@@ -27,6 +27,17 @@ class kafka_publish():
         self.kafka_topic = rospy.get_param("~kafka_topic", "bar")
         self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
 
+        self.use_ssl = rospy.get_param("~use_ssl", False)
+
+        if (self.use_ssl):
+            self.ssl_cafile = rospy.get_param("~ssl_cafile", '../include/certificate.pem')
+            self.ssl_keyfile = rospy.get_param("~ssl_keyfile", "../include/kafka.client.keystore.jks")
+            self.ssl_password = rospy.get_param("~ssl_password", "password")
+            self.ssl_security_protocol = rospy.get_param("~ssl_security_protocol", "SASL_SSL")
+            self.ssl_sasl_mechanism = rospy.get_param("~ssl_sasl_mechanism", "PLAIN")
+            self.sasl_plain_username = rospy.get_param("~sasl_plain_username", "username")
+            self.sasl_plain_password = rospy.get_param("~sasl_plain_password", "password")
+
         # Create schema registry connection and serializer
         self.client = CachedSchemaRegistryClient(url=schema_server)
         self.serializer = MessageSerializer(self.client)
@@ -37,7 +48,18 @@ class kafka_publish():
 
         # Create kafka producer
         # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
-        self.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
+        if(self.use_ssl):
+            self.producer = KafkaProducer(bootstrap_servers=bootstrap_server,
+                                        security_protocol=self.ssl_security_protocol,
+                                        ssl_check_hostname=False,
+                                        ssl_cafile=self.ssl_cafile,
+                                        ssl_keyfile=self.ssl_keyfile,
+                                        sasl_mechanism=self.ssl_sasl_mechanism,
+                                        ssl_password=self.ssl_password,
+                                        sasl_plain_username=self.sasl_plain_username,
+                                        sasl_plain_password=self.sasl_plain_password)
+        else:
+        	self.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
 
         # ROS does not allow a change in msg type once a topic is created. Therefore the msg
         # type must be imported and specified ahead of time.

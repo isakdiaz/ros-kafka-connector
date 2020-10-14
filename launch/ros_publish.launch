@@ -12,11 +12,11 @@
     <arg name="use_ssl" default="False"/>
     <arg name="ssl_cafile" default="$(find robotnik_gcs)/include/certificate.pem"/>
     <arg name="ssl_keyfile" default="$(find robotnik_gcs)/include/kafka.client.keystore.jks"/>
-    <arg name="ssl_password" default="password"/>
+    <arg name="ssl_password" default="PASSWORD"/>
     <arg name="ssl_security_protocol" default="SASL_SSL"/>
     <arg name="ssl_sasl_mechanism" default="PLAIN"/>
-    <arg name="sasl_plain_username" default="robotnik"/>
-    <arg name="sasl_plain_password" default="robotnik"/>
+    <arg name="sasl_plain_username" default="PLAIN_USERNAME"/>
+    <arg name="sasl_plain_password" default="PLAIN_PASSWORD"/>
 
     <node pkg="ros_kafka_connector" type="ros_publish.py" name="$(arg node_name)">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
