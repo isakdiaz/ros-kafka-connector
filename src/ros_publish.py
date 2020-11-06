@@ -2,6 +2,7 @@
 
 import rospy
 from rospy_message_converter import message_converter
+from rospy_message_converter import json_message_converter
 
 import rosbridge_library.internal.ros_loader as ros_loader
 
@@ -28,8 +29,12 @@ class ros_publish():
         self.ros_topic = rospy.get_param("~ros_topic", "test")
         self.kafka_topic = rospy.get_param("~kafka_topic", "bar")
         self.msg_type = rospy.get_param("~msg_type", "std_msgs/String")
-        
+
         self.use_ssl = rospy.get_param("~use_ssl", False)
+        self.use_avro = rospy.get_param("~use_avro", False)
+
+        if (self.use_avro):
+            self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
 
         if (self.use_ssl):
             self.ssl_cafile = rospy.get_param("~ssl_cafile", '../include/certificate.pem')
@@ -59,26 +64,30 @@ class ros_publish():
                                         sasl_plain_password=self.sasl_plain_password
                                         )
         else:
-			self.consumer = KafkaConsumer(self.kafka_topic,
-                                bootstrap_servers=bootstrap_server,
-                                auto_offset_reset='latest',
-                                consumer_timeout_ms=5000)
+            self.consumer = KafkaConsumer(self.kafka_topic,
+                                        bootstrap_servers=bootstrap_server,
+                                        auto_offset_reset='latest',
+                                        consumer_timeout_ms=5000
+                                        )
 
         # Import msg type
         msg_func = ros_loader.get_message_class(self.msg_type)
 
         # Subscribe to ROS topic of interest
         self.publisher = rospy.Publisher(self.ros_topic, msg_func, queue_size=10)
-        rospy.logwarn("Using {} MSGs from KAFKA: {} -> ROS: {}".format(self.msg_type, self.kafka_topic,self.ros_topic))
+        rospy.logwarn("Using {} MSGs from KAFKA: {} -> ROS: {}".format(self.msg_type, self.kafka_topic, self.ros_topic))
 
     def run(self):
         while not rospy.is_shutdown():
             for msg in self.consumer:
                 rospy.logwarn("Received MSG from: " + self.kafka_topic)
-                # Convert Kafka message to Dictionary
-                msg_as_dict = self.serializer.decode_message(msg.value)
-                # Convert Dictionary to ROS Msg
-                ros_msg = message_converter.convert_dictionary_to_ros_message(self.msg_type, msg_as_dict)
+                if (self.use_avro):
+                    # Convert Kafka message to Dictionary
+                    msg_as_dict = self.serializer.decode_message(msg.value)
+                    # Convert Dictionary to ROS Msg
+                    ros_msg = message_converter.convert_dictionary_to_ros_message(self.msg_type, msg_as_dict)
+                else:
+                    ros_msg = json_message_converter.convert_json_to_ros_message(self.msg_type, msg.value)
                 # Publish to ROS topic
                 self.publisher.publish(ros_msg)
 

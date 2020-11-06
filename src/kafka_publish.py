@@ -25,7 +25,11 @@ class kafka_publish():
         self.ros_topic = rospy.get_param("~ros_topic", "test")
         self.msg_type = rospy.get_param("~msg_type", "std_msgs/String")
         self.kafka_topic = rospy.get_param("~kafka_topic", "bar")
-        self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
+
+        self.use_avro = rospy.get_param("~use_avro", False)
+
+        if (self.use_avro):
+            self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
 
         self.use_ssl = rospy.get_param("~use_ssl", False)
 
@@ -41,25 +45,28 @@ class kafka_publish():
         # Create schema registry connection and serializer
         self.client = CachedSchemaRegistryClient(url=schema_server)
         self.serializer = MessageSerializer(self.client)
-        _, self.avro_schema, _ = self.client.get_latest_schema(self.avro_subject)
 
-        if self.avro_schema is None:
-            rospy.logerr("cannot get schema for " + self.avro_subject)
+        if (self.use_avro):
+            _, self.avro_schema, _ = self.client.get_latest_schema(self.avro_subject)
+
+            if self.avro_schema is None:
+                rospy.logerr("cannot get schema for " + self.avro_subject)
 
         # Create kafka producer
         # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
         if(self.use_ssl):
             self.producer = KafkaProducer(bootstrap_servers=bootstrap_server,
-                                        security_protocol=self.ssl_security_protocol,
+                                                security_protocol=self.ssl_security_protocol,
                                         ssl_check_hostname=False,
                                         ssl_cafile=self.ssl_cafile,
                                         ssl_keyfile=self.ssl_keyfile,
                                         sasl_mechanism=self.ssl_sasl_mechanism,
                                         ssl_password=self.ssl_password,
                                         sasl_plain_username=self.sasl_plain_username,
-                                        sasl_plain_password=self.sasl_plain_password)
+                                        sasl_plain_password=self.sasl_plain_password
+                                        )
         else:
-        	self.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
+            self.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
 
         # ROS does not allow a change in msg type once a topic is created. Therefore the msg
         # type must be imported and specified ahead of time.
@@ -81,16 +88,25 @@ class kafka_publish():
         # Convert from Dictionary to Kafka message
         # this way is slow, as it has to retrieve last schema
         # msg_as_serial = self.serializer.encode_record_for_topic(self.kafka_topic, msg_as_dict)
-        try:
-            msg_as_serial = self.serializer.encode_record_with_schema(self.kafka_topic, self.avro_schema, msg_as_dict)
-            self.producer.send(self.kafka_topic, value=msg_as_serial)
-        except Exception as e:
-            if self.kafka_topic is None:
-                rospy.logwarn("kafka_topic is None")
-            elif self.avro_schema is None:
-                rospy.logwarn("Tryed connect with the topic: " + self.kafka_topic + ", but the avro_schema is None. Was the schema registry?")
-            else:
-                rospy.logwarn("Cannot publish to " + self.kafka_topic + " with schema " + self.avro_schema.name + ". Probably bad schema name on registry")
+        if (self.use_avro):
+            try:
+                msg_as_serial = self.serializer.encode_record_with_schema(self.kafka_topic, self.avro_schema, msg_as_dict)
+                self.producer.send(self.kafka_topic, value=msg_as_serial)
+            except Exception as e:
+                if self.kafka_topic is None:
+                    rospy.logwarn("kafka_topic is None")
+                elif self.avro_schema is None:
+                    rospy.logwarn("Tryed connect with the topic: " + self.kafka_topic + ", but the avro_schema is None. Was the schema registry?")
+                else:
+                    rospy.logwarn("Cannot publish to " + self.kafka_topic + " with schema " + self.avro_schema.name + ". Probably bad schema name on registry")
+        else:
+            try:
+                self.producer.send(self.kafka_topic, value=msg_as_json)
+            except Exception as e:
+                if self.kafka_topic is None:
+                    rospy.logwarn("kafka_topic is None")
+                else:
+                    rospy.logwarn("Cannot publish to " + self.kafka_topic + ". Probably bad topic name on registry")
 
     def run(self):
         rate = rospy.Rate(10)

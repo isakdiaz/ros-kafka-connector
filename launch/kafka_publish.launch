@@ -10,9 +10,11 @@
     <arg name="avro_subject" default="string-value" />
     <arg name="node_name" default="kafka_publish" />
 
+    <arg name="use_avro" default="False"/>
+
     <arg name="use_ssl" default="False"/>
-    <arg name="ssl_cafile" default="$(find robotnik_gcs)/include/certificate.pem"/>
-    <arg name="ssl_keyfile" default="$(find robotnik_gcs)/include/kafka.client.keystore.jks"/>
+    <arg name="ssl_cafile" default=""/>
+    <arg name="ssl_keyfile" default=""/>
     <arg name="ssl_password" default="PASSWORD"/>
     <arg name="ssl_security_protocol" default="SASL_SSL"/>
     <arg name="ssl_sasl_mechanism" default="PLAIN"/>
@@ -26,6 +28,8 @@
         <param name="~ros_topic" value="$(arg ros_topic)"/>
         <param name="~msg_type" value="$(arg msg_type)"/>
         <param name="~avro_subject" value="$(arg avro_subject)"/>
+
+        <param name="~use_avro" value="$(arg use_avro)"/>
 
         <param name="~use_ssl" value="$(arg use_ssl)"/>
         <param name="~ssl_cafile" value="$(arg ssl_cafile)"/>

@@ -5,10 +5,20 @@ This is a ROS package for subscribing or publishing to topics using Kafka, with 
 | Parameter       |  Info           | Default  |
 | ------------- |:-------------:| -----:|
 | bootstrap_server | IP of kafka server | "localhost:9092" |
+| schema_server | IP of schema server | "localhost:8081" |
 | kafka_topic | topic name found in Kafka |  "test" |
 | ros_topic | topic name found in ROS |    "test" |
 | msg_type | full ROS message name |    "std_msgs/String" |
+| use_avro | use avro or json format | "False" |
 | avro_subject | full AVRO subject name |    "string-value" |
+| use_ssl | use ssl connection | "False" |
+| ssl_cafile | CA certificate file | "" |
+| ssl_keyfile | client private key file | "" |
+| ssl_password | password for decrypting the keyfile | "password" |
+| ssl_security_protocol | protocol used to communicate with broker | "SASL_SSL" |
+| ssl_sasl_mechanism | authentication mechanism | "PLAIN" |
+| sasl_plain_username | username for sasl PLAIN and SCRAM authetication | "username" |
+| sasl_plain_password | password for sasl PLAIN and SCRAM authetication | "password" |
 
 ROS message types are supported as long as they exist.
 

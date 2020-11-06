@@ -10,8 +10,8 @@
     <arg name="node_name" default="ros_publish" />
 
     <arg name="use_ssl" default="False"/>
-    <arg name="ssl_cafile" default="$(find robotnik_gcs)/include/certificate.pem"/>
-    <arg name="ssl_keyfile" default="$(find robotnik_gcs)/include/kafka.client.keystore.jks"/>
+    <arg name="ssl_cafile" default=""/>
+    <arg name="ssl_keyfile" default=""/>
     <arg name="ssl_password" default="PASSWORD"/>
     <arg name="ssl_security_protocol" default="SASL_SSL"/>
     <arg name="ssl_sasl_mechanism" default="PLAIN"/>
