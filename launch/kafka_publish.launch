@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <launch>
-
+    <arg name="respawn_node" default="false"/>
     <arg name="bootstrap_server" default="localhost:9092"/>
     <arg name="schema_server" default="http://localhost:8081"/>
     <arg name="kafka_topic" default="new_topic"/>
@@ -21,7 +21,7 @@
     <arg name="sasl_plain_username" default="PLAIN_USERNAME"/>
     <arg name="sasl_plain_password" default="PLAIN_PASSWORD"/>
 
-    <node pkg="ros_kafka_connector" type="kafka_publish.py" name="$(arg node_name)" output="screen">
+    <node pkg="ros_kafka_connector" type="kafka_publish.py" name="$(arg node_name)" output="screen" respawn="$(arg respawn_node)">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
         <param name="~schema_server" value="$(arg schema_server)"/>
         <param name="~kafka_topic" value="$(arg kafka_topic)"/>
