@@ -18,6 +18,8 @@
     <arg name="sasl_plain_username" default="PLAIN_USERNAME"/>
     <arg name="sasl_plain_password" default="PLAIN_PASSWORD"/>
 
+    <arg name="group_id" default="no-group"/>
+
     <node pkg="ros_kafka_connector" type="ros_publish.py" name="$(arg node_name)" respawn="$(arg respawn_node)">
         <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
         <param name="~schema_server" value="$(arg schema_server)"/>
@@ -33,6 +35,8 @@
         <param name="~ssl_sasl_mechanism" value="$(arg ssl_sasl_mechanism)"/>
         <param name="~sasl_plain_username" value="$(arg sasl_plain_username)"/>
         <param name="~sasl_plain_password" value="$(arg sasl_plain_password)"/>
+
+        <param name="~group_id" value="$(arg group_id)"/>
     </node>
 
 </launch>

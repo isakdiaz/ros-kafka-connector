@@ -15,6 +15,7 @@ from confluent.schemaregistry.serializers import MessageSerializer
 
 from pprint import pprint
 
+
 class ros_publish():
 
     def __init__(self):
@@ -32,6 +33,10 @@ class ros_publish():
 
         self.use_ssl = rospy.get_param("~use_ssl", False)
         self.use_avro = rospy.get_param("~use_avro", False)
+
+        self.group_id = rospy.get_param("~group_id", None)
+        if (self.group_id == "no-group"):
+            self.group_id = None
 
         if (self.use_avro):
             self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
@@ -53,22 +58,23 @@ class ros_publish():
         # TODO: check possibility of using serializer directly (param value_deserializer from KafkaConsumer)
         if(self.use_ssl):
             self.consumer = KafkaConsumer(self.kafka_topic,
-                                        bootstrap_servers=bootstrap_server,
-                                        security_protocol=self.ssl_security_protocol,
-                                        ssl_check_hostname=False,
-                                        ssl_cafile=self.ssl_cafile,
-                                        ssl_keyfile=self.ssl_keyfile,
-                                        sasl_mechanism=self.ssl_sasl_mechanism,
-                                        ssl_password=self.ssl_password,
-                                        sasl_plain_username=self.sasl_plain_username,
-                                        sasl_plain_password=self.sasl_plain_password
-                                        )
+                                          bootstrap_servers=bootstrap_server,
+                                          security_protocol=self.ssl_security_protocol,
+                                          ssl_check_hostname=False,
+                                          ssl_cafile=self.ssl_cafile,
+                                          ssl_keyfile=self.ssl_keyfile,
+                                          sasl_mechanism=self.ssl_sasl_mechanism,
+                                          ssl_password=self.ssl_password,
+                                          sasl_plain_username=self.sasl_plain_username,
+                                          sasl_plain_password=self.sasl_plain_password
+                                          )
         else:
             self.consumer = KafkaConsumer(self.kafka_topic,
-                                        bootstrap_servers=bootstrap_server,
-                                        auto_offset_reset='latest',
-                                        consumer_timeout_ms=5000
-                                        )
+                                          bootstrap_servers=bootstrap_server,
+                                          auto_offset_reset='latest',
+                                          consumer_timeout_ms=5000,
+                                          group_id=self.group_id
+                                          )
 
         # Import msg type
         msg_func = ros_loader.get_message_class(self.msg_type)
