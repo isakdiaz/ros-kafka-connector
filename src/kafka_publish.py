@@ -26,6 +26,9 @@ class kafka_publish():
         self.msg_type = rospy.get_param("~msg_type", "std_msgs/String")
         self.kafka_topic = rospy.get_param("~kafka_topic", "bar")
 
+        self.show_sent_msg = rospy.get_param("~show_sent_msg", False)
+        self.show_sent_json = rospy.get_param("~show_sent_json", False)
+
         self.use_avro = rospy.get_param("~use_avro", False)
 
         if (self.use_avro):
@@ -74,17 +77,19 @@ class kafka_publish():
 
         # Subscribe to the topic with the chosen imported message type
         rospy.Subscriber(self.ros_topic, msg_func, self.callback)
-        rospy.logwarn("Using {} MSGs from ROS: {} -> KAFKA: {}".format(self.msg_type, self.ros_topic,self.kafka_topic))
+        rospy.loginfo("Using {} MSGs from ROS: {} -> KAFKA: {}".format(self.msg_type, self.ros_topic,self.kafka_topic))
 
 
     def callback(self, msg):
         # Output msg to ROS and send to Kafka server
-        rospy.logwarn("MSG Received: {}".format(msg))
+        if self.show_sent_msg:
+            rospy.loginfo("MSG Received: {}".format(msg))
         # Convert from ROS Msg to Dictionary
         msg_as_dict = message_converter.convert_ros_message_to_dictionary(msg)
         # also print as json for debugging purposes
         msg_as_json = json_message_converter.convert_ros_message_to_json(msg)
-        rospy.logwarn(msg_as_json)
+        if self.show_sent_json:
+            rospy.loginfo(msg_as_json)
         # Convert from Dictionary to Kafka message
         # this way is slow, as it has to retrieve last schema
         # msg_as_serial = self.serializer.encode_record_for_topic(self.kafka_topic, msg_as_dict)
@@ -96,7 +101,7 @@ class kafka_publish():
                 if self.kafka_topic is None:
                     rospy.logwarn("kafka_topic is None")
                 elif self.avro_schema is None:
-                    rospy.logwarn("Tryed connect with the topic: " + self.kafka_topic + ", but the avro_schema is None. Was the schema registry?")
+                    rospy.logwarn("Tried connect with the topic: " + self.kafka_topic + ", but the avro_schema is None. Was the schema registry?")
                 else:
                     rospy.logwarn("Cannot publish to " + self.kafka_topic + " with schema " + self.avro_schema.name + ". Probably bad schema name on registry")
         else:

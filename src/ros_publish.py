@@ -31,6 +31,9 @@ class ros_publish():
         self.kafka_topic = rospy.get_param("~kafka_topic", "bar")
         self.msg_type = rospy.get_param("~msg_type", "std_msgs/String")
 
+        self.show_received_msg = rospy.get_param("~show_received_msg", False)
+        self.show_received_json = rospy.get_param("~show_received_json", False)
+
         self.use_ssl = rospy.get_param("~use_ssl", False)
         self.use_avro = rospy.get_param("~use_avro", False)
 
@@ -92,8 +95,12 @@ class ros_publish():
                     msg_as_dict = self.serializer.decode_message(msg.value)
                     # Convert Dictionary to ROS Msg
                     ros_msg = message_converter.convert_dictionary_to_ros_message(self.msg_type, msg_as_dict)
+                    if self.show_received_json:
+                        rospy.loginfo(msg_as_dict)
                 else:
                     ros_msg = json_message_converter.convert_json_to_ros_message(self.msg_type, msg.value)
+                    if self.show_received_json:
+                        rospy.loginfo(msg.value)
                 # Publish to ROS topic
                 self.publisher.publish(ros_msg)
 
