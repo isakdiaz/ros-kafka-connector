@@ -10,6 +10,8 @@ from kafka import KafkaConsumer
 from confluent.schemaregistry.client import CachedSchemaRegistryClient
 from confluent.schemaregistry.serializers import MessageSerializer
 
+import avro.schema
+
 class kafka_publish():
 
     def __init__(self):
@@ -33,6 +35,7 @@ class kafka_publish():
 
         if (self.use_avro):
             self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
+            self.avro_file = rospy.get_param("~avro_file", "")
 
         self.use_ssl = rospy.get_param("~use_ssl", False)
 
@@ -50,16 +53,22 @@ class kafka_publish():
         self.serializer = MessageSerializer(self.client)
 
         if (self.use_avro):
+            rospy.loginfo("loading schema for " + self.avro_subject + " from registry server")
             _, self.avro_schema, _ = self.client.get_latest_schema(self.avro_subject)
 
             if self.avro_schema is None:
-                rospy.logerr("cannot get schema for " + self.avro_subject)
-
+                rospy.logerr("cannot get schema for " + self.avro_subject + " from registry server")
+                if self.avro_file != "":
+                    rospy.loginfo("loading schema for " + self.avro_subject + " from file " + self.avro_file)
+                    self.avro_schema = avro.schema.parse(open(self.avro_file).read())
+               
+        
+    
         # Create kafka producer
         # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
         if(self.use_ssl):
             self.producer = KafkaProducer(bootstrap_servers=bootstrap_server,
-                                                security_protocol=self.ssl_security_protocol,
+                                        security_protocol=self.ssl_security_protocol,
                                         ssl_check_hostname=False,
                                         ssl_cafile=self.ssl_cafile,
                                         ssl_keyfile=self.ssl_keyfile,

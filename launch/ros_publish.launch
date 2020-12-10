@@ -9,6 +9,7 @@
     <arg name="msg_type" default="geometry_msgs/Twist"/>
     <arg name="node_name" default="ros_publish" />
 
+    <arg name="use_avro" default="False"/>
     <arg name="use_ssl" default="False"/>
     <arg name="ssl_cafile" default=""/>
     <arg name="ssl_keyfile" default=""/>
@@ -27,6 +28,7 @@
         <param name="~ros_topic" value="$(arg ros_topic)"/>
         <param name="~msg_type" value="$(arg msg_type)"/>
 
+        <param name="~use_avro" value="$(arg use_avro)"/>
         <param name="~use_ssl" value="$(arg use_ssl)"/>
         <param name="~ssl_cafile" value="$(arg ssl_cafile)"/>
         <param name="~ssl_keyfile" value="$(arg ssl_keyfile)"/>

@@ -7,10 +7,11 @@
     <arg name="kafka_topic" default="new_topic"/>
     <arg name="ros_topic" default="new_topic"/>
     <arg name="msg_type" default="std_msgs/String"/>
-    <arg name="avro_subject" default="string-value" />
     <arg name="node_name" default="kafka_publish" />
 
     <arg name="use_avro" default="False"/>
+    <arg name="avro_file" default="" />
+    <arg name="avro_subject" default="string-value" />
 
     <arg name="use_ssl" default="False"/>
     <arg name="ssl_cafile" default=""/>
@@ -20,25 +21,27 @@
     <arg name="ssl_sasl_mechanism" default="PLAIN"/>
     <arg name="sasl_plain_username" default="PLAIN_USERNAME"/>
     <arg name="sasl_plain_password" default="PLAIN_PASSWORD"/>
+    
 
     <node pkg="ros_kafka_connector" type="kafka_publish.py" name="$(arg node_name)" output="screen" respawn="$(arg respawn_node)">
-        <param name="~bootstrap_server" value="$(arg bootstrap_server)"/>
-        <param name="~schema_server" value="$(arg schema_server)"/>
-        <param name="~kafka_topic" value="$(arg kafka_topic)"/>
-        <param name="~ros_topic" value="$(arg ros_topic)"/>
-        <param name="~msg_type" value="$(arg msg_type)"/>
-        <param name="~avro_subject" value="$(arg avro_subject)"/>
+        <param name="bootstrap_server" value="$(arg bootstrap_server)"/>
+        <param name="schema_server" value="$(arg schema_server)"/>
+        <param name="kafka_topic" value="$(arg kafka_topic)"/>
+        <param name="ros_topic" value="$(arg ros_topic)"/>
+        <param name="msg_type" value="$(arg msg_type)"/>
 
-        <param name="~use_avro" value="$(arg use_avro)"/>
+        <param name="use_avro" value="$(arg use_avro)"/>
+        <param name="avro_subject" value="$(arg avro_subject)"/>
+        <param name="avro_file" value="$(arg avro_file)" />
 
-        <param name="~use_ssl" value="$(arg use_ssl)"/>
-        <param name="~ssl_cafile" value="$(arg ssl_cafile)"/>
-        <param name="~ssl_keyfile" value="$(arg ssl_keyfile)"/>
-        <param name="~ssl_password" value="$(arg ssl_password)"/>
-        <param name="~ssl_security_protocol" value="$(arg ssl_security_protocol)"/>
-        <param name="~ssl_sasl_mechanism" value="$(arg ssl_sasl_mechanism)"/>
-        <param name="~sasl_plain_username" value="$(arg sasl_plain_username)"/>
-        <param name="~sasl_plain_password" value="$(arg sasl_plain_password)"/>
+        <param name="use_ssl" value="$(arg use_ssl)"/>
+        <param name="ssl_cafile" value="$(arg ssl_cafile)"/>
+        <param name="ssl_keyfile" value="$(arg ssl_keyfile)"/>
+        <param name="ssl_password" value="$(arg ssl_password)"/>
+        <param name="ssl_security_protocol" value="$(arg ssl_security_protocol)"/>
+        <param name="ssl_sasl_mechanism" value="$(arg ssl_sasl_mechanism)"/>
+        <param name="sasl_plain_username" value="$(arg sasl_plain_username)"/>
+        <param name="sasl_plain_password" value="$(arg sasl_plain_password)"/>
     </node>
 
 </launch>
