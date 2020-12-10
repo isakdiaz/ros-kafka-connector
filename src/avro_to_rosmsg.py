@@ -12,7 +12,7 @@ import avro.schema
 #raw_schema = open(sys.argv[1])
 #json_schema = json.load(raw_schema)
 
-PRINT_INFO = False # True
+PRINT_INFO = True
 
 def convert_avro_name_to_ros_name(name):
     if name == 'boolean':
@@ -34,10 +34,17 @@ def convert_avro_name_to_ros_name(name):
 def process_union_schema(schema):
     union_type = []
     for sc in schema.schemas:
-        if sc.fullname != 'null':
-            union_type.append(sc.fullname)
+        if hasattr(sc, 'fullname'):
+            if sc.fullname != 'null':
+                union_type.append(sc.fullname)
+        elif hasattr(sc, 'name'):
+            if sc.name != 'null':
+                union_type.append(sc.name)
+                print 'has name'
+        elif type(sc) == avro.schema.ArraySchema:
+            return sc.items.name
     if len(union_type) >= 2 or len(union_type) == 0:
-        print 'Error!'
+        raise
     return convert_avro_name_to_ros_name(union_type[0])
 
 def process_enum_schema(schema):
