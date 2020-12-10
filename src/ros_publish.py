@@ -94,7 +94,7 @@ class ros_publish():
                     # Convert Kafka message to Dictionary
                     msg_as_dict = self.serializer.decode_message(msg.value)
                     # Convert Dictionary to ROS Msg
-                    ros_msg = message_converter.convert_dictionary_to_ros_message(self.msg_type, msg_as_dict)
+                    ros_msg = message_converter.convert_dictionary_to_ros_message(self.msg_type, msg_as_dict, check_types=False)
                     if self.show_received_json:
                         rospy.loginfo(msg_as_dict)
                 else:
