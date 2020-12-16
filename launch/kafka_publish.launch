@@ -8,6 +8,7 @@
     <arg name="ros_topic" default="new_topic"/>
     <arg name="msg_type" default="std_msgs/String"/>
     <arg name="node_name" default="kafka_publish" />
+    <arg name="show_sent_msg" default="False"/>
 
     <arg name="use_avro" default="False"/>
     <arg name="avro_file" default="" />
@@ -29,6 +30,7 @@
         <param name="kafka_topic" value="$(arg kafka_topic)"/>
         <param name="ros_topic" value="$(arg ros_topic)"/>
         <param name="msg_type" value="$(arg msg_type)"/>
+        <param name="show_sent_msg" value="$(arg show_sent_msg)"/>
 
         <param name="use_avro" value="$(arg use_avro)"/>
         <param name="avro_subject" value="$(arg avro_subject)"/>
