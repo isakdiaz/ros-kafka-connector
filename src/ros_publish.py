@@ -39,14 +39,14 @@ class ros_publish():
         if not self.use_avro and rospy.has_param("~schema_server"):
             rospy.logwarn("You have set the use_avro parameter to false, but the schema_server parameter exists... Probably that means that you want to use avro. I will use it")
             self.use_avro = True
-            
+
         if self.use_avro:
             schema_server = rospy.get_param("~schema_server", "http://localhost:8081")
 
             # Create schema registry connection and serializer
             self.client = CachedSchemaRegistryClient(url=schema_server)
             self.serializer = MessageSerializer(self.client)
-  
+
         self.group_id = rospy.get_param("~group_id", None)
         if self.group_id == "no-group":
             self.group_id = None
@@ -90,18 +90,21 @@ class ros_publish():
         if self.debug_info_period != 0:
             self.received_messages_until_last_debug_period = 0
             self.debug_info_timer = rospy.Timer(rospy.Duration(self.debug_info_period), self.debug_callack)
-        
+
         # Import msg type
         msg_func = ros_loader.get_message_class(self.msg_type)
 
         # Subscribe to ROS topic of interest
         self.publisher = rospy.Publisher(self.ros_topic, msg_func, queue_size=10)
-        rospy.loginfo("Using {} MSGs from KAFKA: {} -> ROS: {}".format(self.msg_type, self.kafka_topic, self.ros_topic))
+        rospy.loginfo("Using {} MSGs from {}: {} -> ROS: {}".format(self.msg_type, self.kafka_or_avro_log(), self.kafka_topic, self.ros_topic))
 
     def debug_callack(self, event):
         received_messages = self.received_messages_in_total - self.received_messages_until_last_debug_period
         self.received_messages_until_last_debug_period = self.received_messages_in_total
-        rospy.loginfo('Received %d in %1.1f seconds (total %d), from Kafka %s, published to ROS %s', received_messages, self.debug_info_period, self.received_messages_in_total, self.ros_topic, self.kafka_topic)
+        rospy.loginfo('From %s: %s to ROS %s: Received %d in %1.1f seconds (total %d)', self.kafka_or_avro_log(), self.kafka_topic, self.ros_topic, received_messages, self.debug_info_period, self.received_messages_in_total)
+
+    def kafka_or_avro_log(self):
+        return ("AVRO", "KAFKA")[self.use_avro]
 
     def run(self):
         while not rospy.is_shutdown():
@@ -127,7 +130,7 @@ class ros_publish():
                         rospy.logwarn(str(e) + ': probably you are receiving an avro-encoded message, but trying to process it as a plain message')
                     except Exception as e:
                         rospy.logwarn(str(e) + ': time to debug!')
-                
+
                 if ros_msg != None:
                     self.publisher.publish(ros_msg)
 

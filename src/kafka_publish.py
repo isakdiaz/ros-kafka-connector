@@ -29,12 +29,12 @@ class kafka_publish():
 
         self.show_sent_msg = rospy.get_param("~show_sent_msg", False)
         self.show_sent_json = rospy.get_param("~show_sent_json", False)
-        
+
         self.use_avro = rospy.get_param("~use_avro", False)
         if not self.use_avro and rospy.has_param("~schema_server"):
             rospy.logwarn("You have set the use_avro parameter to false, but the schema_server parameter exists... Probably that means that you want to use avro. I will use it")
             self.use_avro = True
-    
+
         if self.use_avro:
             self.avro_subject = rospy.get_param("~avro_subject", "")
             self.avro_file = rospy.get_param("~avro_file", "")
@@ -46,7 +46,7 @@ class kafka_publish():
             schema_server = rospy.get_param("~schema_server", "http://localhost:8081")
             self.client = CachedSchemaRegistryClient(url=schema_server)
             self.serializer = MessageSerializer(self.client)
-            
+
             rospy.loginfo("Loading schema for " + self.avro_subject + " from registry server")
             _, self.avro_schema, _ = self.client.get_latest_schema(self.avro_subject)
 
@@ -65,9 +65,8 @@ class kafka_publish():
             self.ssl_security_protocol = rospy.get_param("~ssl_security_protocol", "SASL_SSL")
             self.ssl_sasl_mechanism = rospy.get_param("~ssl_sasl_mechanism", "PLAIN")
             self.sasl_plain_username = rospy.get_param("~sasl_plain_username", "username")
-            self.sasl_plain_password = rospy.get_param("~sasl_plain_password", "password")               
-        
-    
+            self.sasl_plain_password = rospy.get_param("~sasl_plain_password", "password")
+
         # Create kafka producer
         # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
         if(self.use_ssl):
@@ -87,22 +86,24 @@ class kafka_publish():
         # ROS does not allow a change in msg type once a topic is created. Therefore the msg
         # type must be imported and specified ahead of time.
         msg_func = ros_loader.get_message_class(self.msg_type)
-        
+
         self.received_messages_in_total = 0
         self.debug_info_period = rospy.get_param("~debug_info_period", 10)
         if self.debug_info_period != 0:
             self.received_messages_until_last_debug_period = 0
             self.debug_info_timer = rospy.Timer(rospy.Duration(self.debug_info_period), self.debug_callack)
-        
+
         # Subscribe to the topic with the chosen imported message type
         rospy.Subscriber(self.ros_topic, msg_func, self.callback)
-        rospy.loginfo("Using {} MSGs from ROS: {} -> KAFKA: {}".format(self.msg_type, self.ros_topic, self.kafka_topic))
-        
+        rospy.loginfo("Using {} MSGs from ROS: {} -> {}: {}".format(self.msg_type, self.ros_topic, self.kafka_or_avro_log(), self.kafka_topic))
 
     def debug_callack(self, event):
         received_messages = self.received_messages_in_total - self.received_messages_until_last_debug_period
         self.received_messages_until_last_debug_period = self.received_messages_in_total
-        rospy.loginfo('Received %d in %1.1f seconds (total %d), from ROS %s, published to Kafka %s', received_messages, self.debug_info_period, self.received_messages_in_total, self.ros_topic, self.kafka_topic)
+        rospy.loginfo('From ROS: %s to %s %s: Received %d in %1.1f seconds (total %d)', self.ros_topic, self.kafka_or_avro_log(), self.kafka_topic, received_messages, self.debug_info_period, self.received_messages_in_total)
+
+    def kafka_or_avro_log(self):
+        return ("AVRO", "KAFKA")[self.use_avro]
 
     def callback(self, msg):
         self.received_messages_in_total += 1
