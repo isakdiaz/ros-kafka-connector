@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="respawn_node" default="false"/>
+    <arg name="localhost" default="true"/>
+    <arg name="bootstrap_server" default="localhost:9093"/>
+    <arg name="schema_server" default="http://localhost:8081"/>
+    <arg name="kafka_topic" default="new_topic"/>
+    <arg name="ros_topic" default="new_topic"/>
+    <arg name="msg_type" default="std_msgs/String"/>
+    <arg name="avro_subject" default="string-value" />
+    <arg name="node_name" default="kafka_publish" />
+
+    <arg name="use_avro" default="False"/>
+
+    <arg name="use_ssl" default="False"/>
+    <arg name="ssl_cafile" default=""/>
+    <arg name="ssl_keyfile" default=""/>
+    <arg name="ssl_password" default="PASSWORD"/>
+    <arg name="ssl_security_protocol" default="SASL_SSL"/>
+    <arg name="ssl_sasl_mechanism" default="PLAIN"/>
+    <arg name="sasl_plain_username" default="PLAIN_USERNAME"/>
+    <arg name="sasl_plain_password" default="PLAIN_PASSWORD"/>
+
+    <arg name="params_path" default="$(find ros_kafka_connector)/config/params.yaml"/>
+
+    <node pkg="ros_kafka_connector" type="test_publish.py" name="$(arg node_name)" output="screen" respawn="$(arg respawn_node)">
+        <rosparam command="load" file="$(find ros_kafka_connector)/config/params.yaml"  subst_value="true"/>
+    </node>
+
+</launch>
