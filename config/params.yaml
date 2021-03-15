@@ -12,14 +12,16 @@ sasl_plain_username: "PLAIN_USERNAME"
 sasl_plain_password: "PLAIN_PASSWORD"
 
 # list of topics added
-list_of_topics: 
-  - name: me
-    kafka_topic: "1"
-    ros_topic: " "
-    ros_msg_type: " "
-    avro_subject: " "
+# kafka -> ros
+list_from_kafka: 
+  - kafka_topic: "test_2_ros"
+    ros_topic: "test_2_ros"
+    ros_msg_type: "crest_msgs/Telemetry"
+    avro_subject: ""
 
-  - kafka_topic: "2"
-    ros_topic: " "
-    ros_msg_type: " "
-    avro_subject: " "
+# ros -> kafka
+list_to_kafka:
+  - kafka_topic: "test_2_kafka"
+    ros_topic: "test_2_kafka"
+    ros_msg_type: "crest_msgs/Telemetry"
+    avro_subject: ""

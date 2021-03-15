@@ -13,13 +13,12 @@ from confluent.schemaregistry.client import CachedSchemaRegistryClient
 from confluent.schemaregistry.serializers import MessageSerializer
 
 
-from pprint import pprint
-
 class Topic:
-    def __init__(self, ros_topic, kafka_topic, ros_msg_type):
-        self.ros_topic = ros_topic
+    def __init__(self, kafka_topic, ros_topic, ros_msg_type, avro_subject):
         self.kafka_topic = kafka_topic
+        self.ros_topic = ros_topic
         self.ros_msg_type = ros_msg_type
+        self.avro_subject = avro_subject
 
 
 class ros_publish():
@@ -31,8 +30,15 @@ class ros_publish():
         rospy.on_shutdown(self.shutdown)
 
         # Retrieve parameters from launch file
-        bootstrap_server = rospy.get_param("~bootstrap_server", "localhost")
-        schema_server = rospy.get_param("~schema_server", "http://localhost")
+        # Global Kafka parameters
+
+        rospy.get_param("~local_host", False)
+        if local_host:
+            bootstrap_server = "localhost:9092"
+            schema_server = "http://localhost:8081/"
+        else:
+            bootstrap_server = rospy.get_param("~bootstrap_server", "localhost:9092")
+            schema_server = rospy.get_param("~schema_server", "http://localhost:8081/")
         
         self.use_ssl = rospy.get_param("~use_ssl", False)
         self.use_avro = rospy.get_param("~use_avro", False)
@@ -40,9 +46,6 @@ class ros_publish():
         self.group_id = rospy.get_param("~group_id", None)
         if (self.group_id == "no-group"):
             self.group_id = None
-
-        if (self.use_avro):
-            self.avro_subject = rospy.get_param("~avro_subject", "bar-value")
 
         if (self.use_ssl):
             self.ssl_cafile = rospy.get_param("~ssl_cafile", '../include/certificate.pem')
@@ -53,22 +56,36 @@ class ros_publish():
             self.sasl_plain_username = rospy.get_param("~sasl_plain_username", "username")
             self.sasl_plain_password = rospy.get_param("~sasl_plain_password", "password")
 
-        # topics list
-        list_of_topics = rospy.get_param("~list_of_topics", [])
-        self.list = []
-        for item in list_of_topics:
+        # from kafka to ROS topics parameters
+        list_from_kafka_topics = rospy.get_param("~list_from_kafka", [])
+        self.list_from_kafka = []
+        for item in list_from_kafka_topics:
             # TODO: check if some value is missing
-            print(item)
-            self.list.append(Topic(item["ros_topic"], item["kafka_topic"], item["ros_msg_type"]))
+            self.list_from_kafka.append(Topic(item["kafka_topic"], "from_kafka/"+item["ros_topic"],
+                                         item["ros_msg_type"], item["avro_subject"]))
+        
+        # from ROS to Kafka topics parameters
+        list_to_kafka_topics = rospy.get_param("~list_to_kafka", [])
+        self.list_to_kafka = []
+        for item in list_to_kafka_topics:
+            # TODO: check if some value is missing
+            self.list_to_kafka.append(Topic(item["kafka_topic"], "to_kafka/"+item["ros_topic"],
+                                         item["ros_msg_type"], item["avro_subject"]))
 
         # Create schema registry connection and serializer
         self.client = CachedSchemaRegistryClient(url=schema_server)
         self.serializer = MessageSerializer(self.client)
 
+        if (self.use_avro):
+            for topic in self.list_to_kafka:
+                _, topic.avro_schema, _ = self.client.get_latest_schema(topic.avro_subject)
+
+                if topic.avro_schema is None:
+                    rospy.logerr("cannot get schema for " + topic.avro_subject)
+
         # Create kafka consumer
         # TODO: check possibility of using serializer directly (param value_deserializer from KafkaConsumer)
-        for topic in self.list:
-            rospy.logwarn("Creating consumer with {} MSGs from KAFKA: {} -> ROS: {}".format(topic.ros_msg_type, topic.kafka_topic, topic.ros_topic))
+        for topic in self.list_from_kafka:
             if(self.use_ssl):
                 topic.consumer = KafkaConsumer(topic.kafka_topic,
                                         bootstrap_servers=bootstrap_server,
@@ -96,9 +113,65 @@ class ros_publish():
             topic.publisher = rospy.Publisher(topic.ros_topic, msg_func, queue_size=10)
             rospy.logwarn("Using {} MSGs from KAFKA: {} -> ROS: {}".format(topic.ros_msg_type, topic.kafka_topic, topic.ros_topic))
 
+        # Create kafka producer
+        # TODO: check possibility of using serializer directly (param value_serializer from KafkaProducer)
+        for topic in self.list_to_kafka:
+            if(self.use_ssl):
+                topic.producer = KafkaProducer(bootstrap_servers=bootstrap_server,
+                                            security_protocol=self.ssl_security_protocol,
+                                            ssl_check_hostname=False,
+                                            ssl_cafile=self.ssl_cafile,
+                                            ssl_keyfile=self.ssl_keyfile,
+                                            sasl_mechanism=self.ssl_sasl_mechanism,
+                                            ssl_password=self.ssl_password,
+                                            sasl_plain_username=self.sasl_plain_username,
+                                            sasl_plain_password=self.sasl_plain_password
+                                            )
+            else:
+                topic.producer = KafkaProducer(bootstrap_servers=bootstrap_server)
+
+            # ROS does not allow a change in msg type once a topic is created. Therefore the msg
+            # type must be imported and specified ahead of time.
+            msg_func = ros_loader.get_message_class(topic.ros_msg_type)
+
+            # Subscribe to the topic with the chosen imported message type
+            rospy.Subscriber(topic.ros_topic, msg_func, self.callback, topic)
+            rospy.logwarn("Using {} MSGs from ROS: {} -> KAFKA: {}".format(topic.ros_msg_type, topic.ros_topic, topic.kafka_topic))
+
+    def callback(self, msg, topic):
+        # Output msg to ROS and send to Kafka server
+        rospy.logwarn("MSG received from {}: {}".format(topic.ros_topic, msg))
+        # Convert from ROS Msg to Dictionary
+        msg_as_dict = message_converter.convert_ros_message_to_dictionary(msg)
+        # also print as json for debugging purposes
+        msg_as_json = json_message_converter.convert_ros_message_to_json(msg)
+        rospy.logwarn(msg_as_json)
+        # Convert from Dictionary to Kafka message
+        # this way is slow, as it has to retrieve last schema
+        # msg_as_serial = self.serializer.encode_record_for_topic(self.kafka_topic, msg_as_dict)
+        if (self.use_avro):
+            try:
+                msg_as_serial = self.serializer.encode_record_with_schema(topic.kafka_topic, topic.avro_schema, msg_as_dict)
+                topic.producer.send(topic.kafka_topic, value=msg_as_serial)
+            except Exception as e:
+                if topic.kafka_topic is None:
+                    rospy.logwarn("kafka_topic is None")
+                elif topic.avro_schema is None:
+                    rospy.logwarn("Tryed connect with the topic: " + topic.kafka_topic + ", but the avro_schema is None. Was the schema registry?")
+                else:
+                    rospy.logwarn("Cannot publish to " + topic.kafka_topic + " with schema " + topic.avro_schema.name + ". Probably bad schema name on registry")
+        else:
+            try:
+                topic.producer.send(topic.kafka_topic, value=msg_as_json)
+            except Exception as e:
+                if topic.kafka_topic is None:
+                    rospy.logwarn("kafka_topic is None")
+                else:
+                    rospy.logwarn("Cannot publish to " + topic.kafka_topic + ". Probably bad topic name on registry")
+
     def run(self):
         while not rospy.is_shutdown():
-            for topic in self.list:
+            for topic in self.list_from_kafka:
                 for msg in topic.consumer:
                     rospy.logwarn("Received MSG from: " + topic.kafka_topic)
                     if (self.use_avro):
@@ -109,7 +182,7 @@ class ros_publish():
                     else:
                         ros_msg = json_message_converter.convert_json_to_ros_message(topic.ros_msg_type, msg.value)
                     # Publish to ROS topic
-                    self.publisher.publish(ros_msg)
+                    topic.publisher.publish(ros_msg)
 
     def shutdown(self):
         rospy.loginfo("Shutting down")
@@ -118,7 +191,7 @@ if __name__ == "__main__":
 
     try:
         node = ros_publish()
-        #node.run()
+        node.run()
     except rospy.ROSInterruptException:
         pass
 
