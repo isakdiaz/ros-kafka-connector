@@ -3,25 +3,24 @@ bootstrap_server: "localhost:9092"
 schema_server: "http://localhost:8081/"
 use_avro: False
 use_ssl: False
-ssl_cafile: " "
-ssl_keyfile: " "
+ssl_cafile: "" # certificate.pem
+ssl_keyfile: "" # keystore.jks
 ssl_password: "PASSWORD"
 ssl_security_protocol: "SASL_SSL"
 ssl_sasl_mechanism: "PLAIN"
 sasl_plain_username: "PLAIN_USERNAME"
 sasl_plain_password: "PLAIN_PASSWORD"
 
-# list of topics added
+# topics lists
 # kafka -> ros
 list_from_kafka: 
-  - kafka_topic: "test_2_ros"
-    ros_topic: "test_2_ros"
-    ros_msg_type: "crest_msgs/Telemetry"
-    avro_subject: ""
+  - kafka_topic: "test_from_ros"
+    ros_topic: "test_from_ros"
+    ros_msg_type: "std_msgs/String"
 
 # ros -> kafka
 list_to_kafka:
-  - kafka_topic: "test_2_kafka"
-    ros_topic: "test_2_kafka"
-    ros_msg_type: "crest_msgs/Telemetry"
+  - kafka_topic: "test_to_kafka"
+    ros_topic: "test_to_kafka"
+    ros_msg_type: "std_msgs/String"
     avro_subject: ""

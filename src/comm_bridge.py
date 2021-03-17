@@ -21,21 +21,22 @@ class Topic:
         self.avro_subject = avro_subject
 
 
-class ros_publish():
+class comm_bridge():
 
     def __init__(self):
 
         # initialize node
-        rospy.init_node("test_publish")
+        rospy.init_node("comm_bridge")
         rospy.on_shutdown(self.shutdown)
 
         # Retrieve parameters from launch file
         # Global Kafka parameters
 
-        rospy.get_param("~local_host", False)
-        if local_host:
+        local_server = rospy.get_param("~local_server", False)
+        if local_server:
             bootstrap_server = "localhost:9092"
             schema_server = "http://localhost:8081/"
+            rospy.logwarn("Using Kafka local server.")
         else:
             bootstrap_server = rospy.get_param("~bootstrap_server", "localhost:9092")
             schema_server = rospy.get_param("~schema_server", "http://localhost:8081/")
@@ -62,7 +63,7 @@ class ros_publish():
         for item in list_from_kafka_topics:
             # TODO: check if some value is missing
             self.list_from_kafka.append(Topic(item["kafka_topic"], "from_kafka/"+item["ros_topic"],
-                                         item["ros_msg_type"], item["avro_subject"]))
+                                         item["ros_msg_type"]))
         
         # from ROS to Kafka topics parameters
         list_to_kafka_topics = rospy.get_param("~list_to_kafka", [])
@@ -190,7 +191,7 @@ class ros_publish():
 if __name__ == "__main__":
 
     try:
-        node = ros_publish()
+        node = comm_bridge()
         node.run()
     except rospy.ROSInterruptException:
         pass
