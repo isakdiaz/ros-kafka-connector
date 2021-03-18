@@ -6,6 +6,7 @@ This is a ROS package for subscribing or publishing to topics using Kafka, with 
 | ------------- |:-------------:| -----:|
 | bootstrap_server | IP of kafka server | "localhost:9092" |
 | schema_server | IP of schema server | "localhost:8081" |
+| local_server | use kafka local server to test | "false" |
 | kafka_topic | topic name found in Kafka |  "test" |
 | ros_topic | topic name found in ROS |    "test" |
 | msg_type | full ROS message name |    "std_msgs/String" |
@@ -64,3 +65,6 @@ $ rostopic pub -r 3 /test std_msgs/String "data: 'Hello World!'"
 This will output the hello world at 3 hz to the "/test" ROS topic. To confirm this works you can open up another terminal and type in 
 "rostopic echo /test" which should show you the same message is being published to ROS. This message should also be published to the Kafka topic.
 
+## Setting up
+
+You can launch a ros node to communicate with multiples topics. The configuration of this node can be found in config/params.yaml. In this file can be configured the parameters of the Kafka broker and two lists of topics, one for ros -> kafka and the other for kafka -> ros communications.
