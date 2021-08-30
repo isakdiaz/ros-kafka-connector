@@ -6,6 +6,7 @@ from kafka import KafkaConsumer
 import rospy
 from rospy_message_converter import json_message_converter
 from utils import import_msg_type
+from ros_kafka_connector.msg import LabeledImg
 
 class ros_publish():
 
@@ -24,7 +25,7 @@ class ros_publish():
         # Create kafka consumer
         self.consumer = KafkaConsumer(self.kafka_topic,
                                     bootstrap_servers=bootstrap_server,
-                                    value_deserializer=lambda m: json.loads(m.decode('ascii')),
+                                    value_deserializer=lambda m: json.loads(m.decode('utf-8')),
                                     auto_offset_reset='latest',
                                     consumer_timeout_ms=5000)
 
@@ -34,21 +35,21 @@ class ros_publish():
         # Subscribe to ROS topic of interest
         self.publisher = rospy.Publisher(self.ros_topic, msg_func, queue_size=10)
         rospy.logwarn("Using {} MSGs from KAFKA: {} -> ROS: {}".format(self.msg_type, self.kafka_topic,self.ros_topic))
-        
+
 
 
     def run(self):
- 
         while not rospy.is_shutdown():
             for msg in self.consumer:
-                # Convert Kafka message to JSON string
-                json_str = json.dumps(msg.value)
-                # Convert JSON to ROS message
-                ros_msg = json_message_converter.convert_json_to_ros_message(self.msg_type, json_str)
-                # Publish to ROS topic
-                self.publisher.publish(ros_msg)
+                #plot what we get
+                rospy.logwarn("Topic: %s, Partition: %d, Offset: %d, Key: %s, Value: %s" % ( msg.topic, msg.partition, msg.offset, msg.key, msg.value ))
+#                # Convert Kafka message to JSON string
+                #json_str = json.dumps(msg.value)
+#                # Convert JSON to ROS message
+                ros_msg = json_message_converter.convert_json_to_ros_message(self.msg_type, msg.value)
+#                # Publish to ROS topic
+#                self.publisher.publish(ros_msg)
                 rospy.logwarn("Received MSG: {}".format(json_str))
-        
         rospy.spin()
 
 

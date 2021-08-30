@@ -16,7 +16,7 @@ class kafka_publish():
         rospy.on_shutdown(self.shutdown)
 
         # Retrieve parameters from launch file
-        bootstrap_server = rospy.get_param("~bootstrap_server", "localhost:9092")
+        bootstrap_server = rospy.get_param("~bootstrap_server", "114.70.21.161:2181")
         self.ros_topic = rospy.get_param("~ros_topic", "test")
         self.kafka_topic = rospy.get_param("~kafka_topic", "test")
         self.msg_type = rospy.get_param("~msg_type", "std_msgs/String")
