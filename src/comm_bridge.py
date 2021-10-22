@@ -183,7 +183,11 @@ class comm_bridge():
                     else:
                         ros_msg = json_message_converter.convert_json_to_ros_message(topic.ros_msg_type, msg.value)
                     # Publish to ROS topic
-                    topic.publisher.publish(ros_msg)
+                    try:
+                        topic.publisher.publish(ros_msg)
+                    except rospy.ROSSerializationException as e:
+                        rospy.logerr("Cannot serialize message from %s to topic %s with type %s. Exception: %s" % (topic.kafka_topic, topic.ros_topic, topic.ros_msg_type, str(e)))
+
 
     def shutdown(self):
         rospy.loginfo("Shutting down")
