@@ -141,7 +141,7 @@ class comm_bridge():
 
     def callback(self, msg, topic):
         # Output msg to ROS and send to Kafka server
-        rospy.logwarn("MSG received from {}: {}".format(topic.ros_topic, msg))
+        rospy.logwarn("ROS MSG received from {}: {}".format(topic.ros_topic, msg))
         # Convert from ROS Msg to Dictionary
         msg_as_dict = message_converter.convert_ros_message_to_dictionary(msg)
         # also print as json for debugging purposes
@@ -174,7 +174,7 @@ class comm_bridge():
         while not rospy.is_shutdown():
             for topic in self.list_from_kafka:
                 for msg in topic.consumer:
-                    rospy.logwarn("Received MSG from: " + topic.kafka_topic)
+                    rospy.logwarn("Kakfa Received MSG from: " + topic.kafka_topic)
                     if (self.use_avro):
                         # Convert Kafka message to Dictionary
                         msg_as_dict = self.serializer.decode_message(msg.value)
