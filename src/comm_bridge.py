@@ -14,7 +14,7 @@ from confluent.schemaregistry.serializers import MessageSerializer
 
 
 class Topic:
-    def __init__(self, kafka_topic, ros_topic, ros_msg_type, avro_subject):
+    def __init__(self, kafka_topic, ros_topic, ros_msg_type, avro_subject=None):
         self.kafka_topic = kafka_topic
         self.ros_topic = ros_topic
         self.ros_msg_type = ros_msg_type
@@ -74,8 +74,9 @@ class comm_bridge():
                                          item["ros_msg_type"], item["avro_subject"]))
 
         # Create schema registry connection and serializer
-        self.client = CachedSchemaRegistryClient(url=schema_server)
-        self.serializer = MessageSerializer(self.client)
+        if self.use_avro:
+          self.client = CachedSchemaRegistryClient(url=schema_server)
+          self.serializer = MessageSerializer(self.client)
 
         if (self.use_avro):
             for topic in self.list_to_kafka:
